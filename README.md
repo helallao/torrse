@@ -11,6 +11,7 @@
 * [magnetdl](https://magnetdl.com)
 * [uniondht](http://uniondht.org)
 * [torlock](https://torlock.com)
+* [torrentdownloads](https://torrentdownloads.pro)
 
 
 ## How to Use
