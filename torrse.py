@@ -10,7 +10,7 @@ categories = ['movie', 'tv', 'music', 'software', 'game', 'anime', 'other']
 
 
 #regex
-_reg_ittorrent2hash = _re.compile('http://itorrents.org/torrent/(.*).torrent')
+_reg_itorrent2hash = _re.compile('http://itorrents.org/torrent/(.*).torrent')
 _reg_bt4g2hash = _re.compile('bt4g.org/magnet/(.*)')
 
 
@@ -20,7 +20,7 @@ _reg_bt4g2hash = _re.compile('bt4g.org/magnet/(.*)')
 _soup = lambda x: _BeautifulSoup(x, 'lxml')
 _hash2magnet = lambda x: f'magnet:?xt=urn:btih:{x}'
 _magnet2hash = lambda x: x.split('&')[0].split(':')[-1].lower()
-_itorrent2hash = lambda x: _reg_ittorrent2hash.search(x).group(1).lower()
+_itorrent2hash = lambda x: _reg_itorrent2hash.search(x).group(1).lower()
 _bt4g2hash = lambda x: _reg_bt4g2hash.search(x).group(1).lower()
 
 
@@ -1092,6 +1092,92 @@ class engine_torlock:
 
 
 
+class engine_torrentdownloads:
+	def __init__(self):
+		self._normal = 'https://torrentdownloads.pro/search/?page={page}&search={query}'
+		
+		
+		
+		self._categories = {
+			'movie': self._normal, 
+			'tv': self._normal, 
+			'music': self._normal, 
+			'software': self._normal, 
+			'game': self._normal, 
+			'anime': self._normal, 
+			'other': self._normal, 
+			None: self._normal
+		    }
+	
+	
+	
+	def search(self, query, category=None, limit=15, magnet=False, add_engine_name=False):
+		query = query.replace(' ', '+')
+		
+		
+		last = 1
+		found = 0
+		results = []
+		
+		
+		
+		while found < limit:
+			resp = _session.get(self._categories[category].format(query=query, page=last))
+			
+			if not resp.ok and resp.status_code not in [404]:
+				return
+			
+			soup = _soup(resp.text)
+			
+			
+			torrentList = [_i for x in soup.select('a[href^="/torrent"]') if (_i := x.parent).name == 'div']
+			
+			
+			
+			
+			if torrentList:
+				for count, torrent in enumerate(torrentList):
+					link, name = ('https://torrentdownloads.pro' + _i.get('href'), _i.getText()) if (_i := torrent.select('a[href^="/torrent"]')[0]) else (None, None)
+					leechers, seeders, size, time = (_i[1].getText(), _i[2].getText(), _i[3].getText().replace(' ', ' '), None) if (_i := torrent.select('span')) else (None, None, None, None)
+					
+					
+					results.append({'name': name, 'link': link, 'seeders': seeders, 'leechers': leechers, 'size': size, 'time': time})
+					
+					
+					if magnet == True:
+						results[-1].update({'magnet': self.get_magnet(link)})
+					
+					if add_engine_name:
+						results[-1].update({'engine': 'torrentdownloads'})
+					
+					
+					found += 1
+					
+					if found >= limit:
+						break
+					
+				last += 1
+			
+							
+			else:
+				break
+		
+		return results[:limit]
+	
+	
+	
+	
+	@staticmethod
+	def get_magnet(link):
+		return magnet[0].get('href') if (magnet := _soup(_session.get(link).text).select('a[href^="magnet"]')) else None
+
+
+
+
+
+
+
+
 
 
 
@@ -1105,7 +1191,8 @@ engine_torrentdownload,
 engine_nyaa, 
 engine_magnetdl, 
 engine_uniondht, 
-engine_torlock]
+engine_torlock, 
+engine_torrentdownloads]
 
 
 
@@ -1154,18 +1241,3 @@ def search(query, category=None, limit=15, magnet=False, exclude_same=True, engi
 				results.append(torrent)
 		
 		return results
-
-
-
-
-
-
-
-#a = engine_magnetdl()
-#b = a.search('dragon nest', limit=50)
-
-
-#for i in b:
-#	print(i, '\n'*10)
-
-#print(len(b))
