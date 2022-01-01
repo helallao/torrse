@@ -12,6 +12,7 @@
 * [uniondht](http://uniondht.org)
 * [torlock](https://torlock.com)
 * [torrentdownloads](https://torrentdownloads.pro)
+* [kickasstorrents](https://kickass.onl)
 
 
 ## How to Use
