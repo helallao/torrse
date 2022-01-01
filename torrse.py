@@ -2,6 +2,7 @@ import requests as _requests
 from bs4 import BeautifulSoup as _BeautifulSoup
 from multiprocessing.dummy import Pool as _Pool
 import re as _re
+from urllib.parse import quote as _quote, unquote as _unquote
 
 
 
@@ -10,7 +11,7 @@ categories = ['movie', 'tv', 'music', 'software', 'game', 'anime', 'other']
 
 
 #regex
-_reg_itorrent2hash = _re.compile('http://itorrents.org/torrent/(.*).torrent')
+_reg_itorrent2hash = _re.compile('itorrents.org/torrent/(.*).torrent')
 _reg_bt4g2hash = _re.compile('bt4g.org/magnet/(.*)')
 
 
@@ -1181,6 +1182,100 @@ class engine_torrentdownloads:
 
 
 
+
+class engine_kickasstorrents:
+	def __init__(self):
+		self._movie = 'https://kickass.onl/usearch/{query}%20category:movies/{page}'
+		self._tv = 'https://kickass.onl/usearch/{query}%20category:tv/{page}'
+		self._music = 'https://kickass.onl/usearch/{query}%20category:music/{page}'
+		self._game = 'https://kickass.onl/usearch/{query}%20category:games/{page}'
+		self._software = 'https://kickass.onl/usearch/{query}%20category:applications/{page}'
+		
+		self._normal = 'https://kickass.onl/usearch/{query}/{page}'
+		
+		
+		
+		self._categories = {
+			'movie': self._movie, 
+			'tv': self._tv, 
+			'music': self._music, 
+			'software': self._software, 
+			'game': self._game, 
+			'anime': self._normal, 
+			'other': self._normal, 
+			None: self._normal
+		    }
+	
+	
+	
+	def search(self, query, category=None, limit=15, magnet=False, add_engine_name=False):
+		query = query.replace(' ', '%20')
+		
+		
+		last = 1
+		found = 0
+		results = []
+		
+		
+		
+		while found < limit:
+			resp = _session.get(self._categories[category].format(query=query, page=last))
+			
+			if not resp.ok and resp.status_code not in [404]:
+				return
+			
+			soup = _soup(resp.text)
+			
+			
+			torrentList = soup.select('tr[id="torrent_latest_torrents"]')
+			
+			
+			
+			if torrentList:
+				for count, torrent in enumerate(torrentList):
+					link, name = ('https://kickass.onl' + _i.get('href'), _i.getText()) if (_i := torrent.select('a[class="cellMainLink"]')[0]) else (None, None)
+					size, time, seeders, leechers = (_i[1].getText(), _i[2].getText(), _i[3].getText(), _i[4].getText()) if (_i := torrent.select('td')) else (None, None, None, None)
+					magnet = _hash2magnet(_magnet2hash(_unquote(torrent.select('a[title="Download torrent file"]')[0].get('href')).split('https://mylink.cx/?url=')[1]))
+					
+					
+					results.append({'name': name, 'link': link, 'seeders': seeders, 'leechers': leechers, 'size': size, 'time': time, 'magnet': magnet})
+					
+					
+					
+					if add_engine_name:
+						results[-1].update({'engine': 'kickasstorrents'})
+					
+					
+					found += 1
+					
+					if found >= limit:
+						break
+					
+				last += 1
+			
+							
+			else:
+				break
+		
+		return results[:limit]
+	
+	
+	
+	@staticmethod
+	def get_magnet(link):
+		return
+
+
+
+
+
+
+
+
+
+
+
+
 Engines = [engine_1337x, 
 engine_solidtorrents, 
 engine_bt4g, 
@@ -1192,7 +1287,8 @@ engine_nyaa,
 engine_magnetdl, 
 engine_uniondht, 
 engine_torlock, 
-engine_torrentdownloads]
+engine_torrentdownloads, 
+engine_kickasstorrents]
 
 
 
