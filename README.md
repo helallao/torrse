@@ -47,7 +47,7 @@ for i in results:
 #default parameters
 #search(query, category=None, limit=15, magnet=False, exclude_same=True, engines=Engines)
 results = torrse.search('dear esther', 'game', 30)
-results = torrse.search('dear esther', 'game', 30, engines=[engine_1337x, engine_piratebay, engine_nyaa]) 
+results = torrse.search('dear esther', 'game', 30, engines=[torrse.engine_1337x, torrse.engine_piratebay, torrse.engine_nyaa]) 
 ```
 
 ## requirements
