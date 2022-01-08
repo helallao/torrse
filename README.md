@@ -27,7 +27,7 @@ engine = torrse.engine_1337x()
 #query = your query
 # category = category of torrent --> print(torrse.categories)
 #limit = limit of torrents
-#magnet = extract magnet for each torrent if True, it may be slow when you use it, also you can extract magnet after search --> engine.get_magnet(link)
+#magnet = extract magnet for each torrent if True, it may be slow when you use it, also you can extract magnet after search --> torrse.get_magnet(link)
 
 #default parameters
 #search(query, category=None, limit=15, magnet=False)
