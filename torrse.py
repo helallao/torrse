@@ -25,6 +25,33 @@ _itorrent2hash = lambda x: _reg_itorrent2hash.search(x).group(1).lower()
 _bt4g2hash = lambda x: _reg_bt4g2hash.search(x).group(1).lower()
 
 
+def get_magnet(link):
+	matchmake = {
+		'1337xx.to': lambda x: magnet[0].get('href') if (magnet := _soup(_session.get(x).text).select('a[href^="magnet"]')) else None,
+		'solidtorrents.net': lambda x: None,
+		'bt4g.org': lambda x: _hash2magnet(_bt4g2hash(x)),
+		'itorrents': lambda x: _hash2magnet(_itorrent2hash(x)),
+		'zooqle.com': lambda x: None,
+		'knaben.ru': lambda x: None,
+		'torrentdownload.info': lambda x: None,
+		'nyaa.si': lambda x: None,
+		'magnetdl': lambda x: None,
+		'uniondht.org': lambda x: magnet[0].get('href') if (magnet := _soup(_session.get(x).text).select('a[href^="magnet"]')) else None,
+		'torlock.com': lambda x: magnet[0].get('href') if (magnet := _soup(_session.get(x).text).select('a[href^="magnet"]')) else None,
+		'torrentdownloads.pro': lambda x: magnet[0].get('href') if (magnet := _soup(_session.get(x).text).select('a[href^="magnet"]')) else None,
+		'kickass.onl': lambda x: None
+	}
+	
+	link = link.replace('https://', '').replace('http://', '')
+	
+	for i in matchmake:
+		if link.startswith(i):
+			return matchmake[i]('http://' + link)
+	
+
+
+
+
 
 
 _session = _requests.Session()
@@ -39,15 +66,15 @@ _session.headers.update({'user-agent': 'Mozilla/5.0 (Windows NT 5.1; rv:41.0) Ge
 
 class engine_1337x:
 	def __init__(self):
-		self._movie = 'https://www.1337xx.to/category-search/{query}/Movies/{page}/'
-		self._tv = 'https://www.1337xx.to/category-search/{query}/TV/{page}/'
-		self._music = 'https://www.1337xx.to/category-search/{query}/Music/{page}/'
-		self._anime = 'https://www.1337xx.to/category-search/{query}/Anime/{page}/'
-		self._game = 'https://www.1337xx.to/category-search/{query}/Games/{page}/'
-		self._software = 'https://www.1337xx.to/category-search/{query}/Apps/{page}/'
-		self._other = 'https://www.1337xx.to/category-search/{query}/Other/{page}/'
+		self._movie = 'https://1337xx.to/category-search/{query}/Movies/{page}/'
+		self._tv = 'https://1337xx.to/category-search/{query}/TV/{page}/'
+		self._music = 'https://1337xx.to/category-search/{query}/Music/{page}/'
+		self._anime = 'https://1337xx.to/category-search/{query}/Anime/{page}/'
+		self._game = 'https://1337xx.to/category-search/{query}/Games/{page}/'
+		self._software = 'https://1337xx.to/category-search/{query}/Apps/{page}/'
+		self._other = 'https://1337xx.to/category-search/{query}/Other/{page}/'
 		
-		self._normal = 'https://www.1337xx.to/search/{query}/{page}/'
+		self._normal = 'https://1337xx.to/search/{query}/{page}/'
 		
 		
 		
@@ -93,7 +120,7 @@ class engine_1337x:
 			if torrentList:
 				for count, torrent in enumerate(torrentList):
 					name = torrent.getText().strip()
-					link = 'https://www.1337xx.to/' + torrent['href']
+					link = 'https://1337xx.to/' + torrent['href']
 					seeders = self._seedersList[count].getText()
 					leechers = self._leechersList[count].getText()
 					size = self._sizeList[count].contents[0]
@@ -103,7 +130,7 @@ class engine_1337x:
 					
 					
 					if magnet == True:
-						results[-1].update({'magnet': self.get_magnet(link)})
+						results[-1].update({'magnet': get_magnet(link)})
 					
 					if add_engine_name:
 						results[-1].update({'engine': '1337x'})
@@ -121,12 +148,7 @@ class engine_1337x:
 				break
 		
 		return results[:limit]
-	
-	
-	
-	@staticmethod
-	def get_magnet(link):
-		return magnet[0].get('href') if (magnet := _soup(_session.get(link).text).select('a[href^="magnet"]')) else None
+
 
 
 
@@ -208,13 +230,9 @@ class engine_solidtorrents:
 				break
 		
 		return results[:limit]
-	
-	
-	
-	
-	@staticmethod
-	def get_magnet(link):
-		return
+
+
+
 
 
 
@@ -272,11 +290,11 @@ class engine_bt4g:
 			
 			if torrentList:
 				for torrent in torrentList:
-					link, name = ('https://www.bt4g.org' + _i.get('href'), _i.getText()) if (_i := torrent.select('a')[0]) else (None, None)
+					link, name = ('https://bt4g.org' + _i.get('href'), _i.getText()) if (_i := torrent.select('a')[0]) else (None, None)
 					leechers, seeders, size, time = (_i[-1].select('b')[0].getText(), _i[-2].select('b')[0].getText(), _i[-3].select('b')[0].getText(), _i[-5].select('b')[0].getText()) if (_i := torrent.select('span')) else (None, None, None, None)
 					
 					
-					results.append({'name': name, 'link': link, 'seeders': seeders, 'leechers': leechers, 'size': size, 'time': time, 'magnet': self.get_magnet(link)})
+					results.append({'name': name, 'link': link, 'seeders': seeders, 'leechers': leechers, 'size': size, 'time': time, 'magnet': get_magnet(link)})
 					
 					
 					if add_engine_name:
@@ -294,13 +312,11 @@ class engine_bt4g:
 				break
 		
 		return results[:limit]
-	
-	
-	
-	
-	@staticmethod
-	def get_magnet(link):
-		return _hash2magnet(_bt4g2hash(link))
+
+
+
+
+
 
 
 
@@ -312,15 +328,15 @@ class engine_bt4g:
 
 class engine_limetorrents:
 	def __init__(self):
-		self._movie = 'https://www.limetorrents.pro/search/movies/{query}/{page}/'
-		self._tv = 'https://www.limetorrents.pro/search/tv/{query}/{page}/'
-		self._music = 'https://www.limetorrents.pro/search/music/{query}/{page}/'
-		self._anime = 'https://www.limetorrents.pro/search/anime/{query}/{page}/'
-		self._game = 'https://www.limetorrents.pro/search/games/{query}/{page}/'
-		self._software = 'https://www.limetorrents.pro/search/applications/{query}/{page}/'
-		self._other = 'https://www.limetorrents.pro/search/other/{query}/{page}/'
+		self._movie = 'https://limetorrents.pro/search/movies/{query}/{page}/'
+		self._tv = 'https://limetorrents.pro/search/tv/{query}/{page}/'
+		self._music = 'https://limetorrents.pro/search/music/{query}/{page}/'
+		self._anime = 'https://limetorrents.pro/search/anime/{query}/{page}/'
+		self._game = 'https://limetorrents.pro/search/games/{query}/{page}/'
+		self._software = 'https://limetorrents.pro/search/applications/{query}/{page}/'
+		self._other = 'https://limetorrents.pro/search/other/{query}/{page}/'
 		
-		self._normal = 'https://www.limetorrents.pro/search/all/{query}/{page}/'
+		self._normal = 'https://limetorrents.pro/search/all/{query}/{page}/'
 		
 		
 		
@@ -368,7 +384,7 @@ class engine_limetorrents:
 					
 					
 					
-					results.append({'name': name, 'link': link, 'seeders': seeders, 'leechers': leechers, 'size': size, 'time': time, 'magnet': self.get_magnet(link)})
+					results.append({'name': name, 'link': link, 'seeders': seeders, 'leechers': leechers, 'size': size, 'time': time, 'magnet': get_magnet(link)})
 					
 					
 					if add_engine_name:
@@ -386,13 +402,13 @@ class engine_limetorrents:
 				break
 		
 		return results[:limit]
-	
-	
-	
-	
-	@staticmethod
-	def get_magnet(link):
-		return _hash2magnet(_itorrent2hash(link))
+
+
+
+
+
+
+
 
 
 
@@ -498,13 +514,14 @@ class engine_zooqle:
 				break
 		
 		return results[:limit]
-	
-	
-	
-	
-	@staticmethod
-	def get_magnet(link):
-		return
+
+
+
+
+
+
+
+
 
 
 
@@ -589,12 +606,12 @@ class engine_piratebay:
 				break
 		
 		return results[:limit]
-	
-	
-	
-	@staticmethod
-	def get_magnet(link):
-		return
+
+
+
+
+
+
 
 
 
@@ -608,7 +625,7 @@ class engine_piratebay:
 
 class engine_torrentdownload:
 	def __init__(self):
-		self._normal = 'https://www.torrentdownload.info/search?q={query}&p={page}'
+		self._normal = 'https://torrentdownload.info/search?q={query}&p={page}'
 		
 		
 		
@@ -649,7 +666,7 @@ class engine_torrentdownload:
 			
 			if torrentList:
 				for count, torrent in enumerate(torrentList):
-					link, name = ('https://www.torrentdownload.info' + _i.get('href'), _i.getText()) if (_i := torrent.select('a')[0]) else (None, None)
+					link, name = ('https://torrentdownload.info' + _i.get('href'), _i.getText()) if (_i := torrent.select('a')[0]) else (None, None)
 					time, size, seeders, leechers = (_i[1].getText(), _i[2].getText(), _i[3].getText(), _i[4].getText()) if (_i := torrent.select('td')) else (None, None, None, None)
 					magnet = torrent.select('a')[0].get('href').split('/')[1]
 					
@@ -674,12 +691,12 @@ class engine_torrentdownload:
 				break
 		
 		return results[:limit]
-	
-	
-	
-	@staticmethod
-	def get_magnet(link):
-		return
+
+
+
+
+
+
 
 
 
@@ -765,13 +782,12 @@ class engine_nyaa:
 				break
 		
 		return results[:limit]
-	
-	
-	
-	
-	@staticmethod
-	def get_magnet(link):
-		return
+
+
+
+
+
+
 
 
 
@@ -876,13 +892,11 @@ class engine_magnetdl:
 		
 		
 		return results[:limit]
-	
-	
-	
-	
-	@staticmethod
-	def get_magnet(link):
-		return
+
+
+
+
+
 
 
 
@@ -956,7 +970,7 @@ class engine_uniondht:
 					
 					
 					if magnet == True:
-						results[-1].update({'magnet': self.get_magnet(link)})
+						results[-1].update({'magnet': get_magnet(link)})
 					
 					if add_engine_name:
 						results[-1].update({'engine': 'uniondht'})
@@ -973,13 +987,11 @@ class engine_uniondht:
 				break
 		
 		return results[:limit]
-	
-	
-	
-	
-	@staticmethod
-	def get_magnet(link):
-		return magnet[0].get('href') if (magnet := _soup(_session.get(link).text).select('a[href^="magnet"]')) else None
+
+
+
+
+
 
 
 
@@ -997,15 +1009,15 @@ class engine_uniondht:
 
 class engine_torlock:
 	def __init__(self):
-		self._movie = 'https://www.torlock.com/movie/torrents/{query}.html'
-		self._tv = 'https://www.torlock.com/television/torrents/{query}.html'
-		self._music = 'https://www.torlock.com/music/torrents/{query}.html'
-		self._anime = 'https://www.torlock.com/anime/torrents/{query}.html'
-		self._game = 'https://www.torlock.com/game/torrents/{query}.html'
-		self._software = 'https://www.torlock.com/software/torrents/{query}.html'
-		self._other = 'https://www.torlock.com/unknown/torrents/{query}.html'
+		self._movie = 'https://torlock.com/movie/torrents/{query}.html'
+		self._tv = 'https://torlock.com/television/torrents/{query}.html'
+		self._music = 'https://torlock.com/music/torrents/{query}.html'
+		self._anime = 'https://torlock.com/anime/torrents/{query}.html'
+		self._game = 'https://torlock.com/game/torrents/{query}.html'
+		self._software = 'https://torlock.com/software/torrents/{query}.html'
+		self._other = 'https://torlock.com/unknown/torrents/{query}.html'
 		
-		self._normal = 'https://www.torlock.com/all/torrents/{query}.html'
+		self._normal = 'https://torlock.com/all/torrents/{query}.html'
 		
 		
 		
@@ -1055,7 +1067,7 @@ class engine_torlock:
 					
 					
 					if magnet == True:
-						results[-1].update({'magnet': self.get_magnet(link)})
+						results[-1].update({'magnet': get_magnet(link)})
 					
 					if add_engine_name:
 						results[-1].update({'engine': 'torlock'})
@@ -1073,12 +1085,12 @@ class engine_torlock:
 				break
 		
 		return results[:limit]
-	
-	
-	
-	@staticmethod
-	def get_magnet(link):
-		return magnet[0].get('href') if (magnet := _soup(_session.get(link).text).select('a[href^="magnet"]')) else None
+
+
+
+
+
+
 
 
 
@@ -1146,7 +1158,7 @@ class engine_torrentdownloads:
 					
 					
 					if magnet == True:
-						results[-1].update({'magnet': self.get_magnet(link)})
+						results[-1].update({'magnet': get_magnet(link)})
 					
 					if add_engine_name:
 						results[-1].update({'engine': 'torrentdownloads'})
@@ -1164,13 +1176,12 @@ class engine_torrentdownloads:
 				break
 		
 		return results[:limit]
-	
-	
-	
-	
-	@staticmethod
-	def get_magnet(link):
-		return magnet[0].get('href') if (magnet := _soup(_session.get(link).text).select('a[href^="magnet"]')) else None
+
+
+
+
+
+
 
 
 
@@ -1258,12 +1269,14 @@ class engine_kickasstorrents:
 				break
 		
 		return results[:limit]
-	
-	
-	
-	@staticmethod
-	def get_magnet(link):
-		return
+
+
+
+
+
+
+
+
 
 
 
@@ -1315,18 +1328,23 @@ def search(query, category=None, limit=15, magnet=False, exclude_same=True, engi
 	
 	if exclude_same:
 		for x in responses:
-			for torrent in x:
-				magnet = torrent.get('magnet', None)
-				
-				if magnet:
-					hash = _magnet2hash(magnet)
+			try:
+				for torrent in x:
+					magnet = torrent.get('magnet', None)
 					
-					if hash not in hash_found:
-						hash_found.append(hash)
+					if magnet:
+						hash = _magnet2hash(magnet)
+						
+						if hash not in hash_found:
+							hash_found.append(hash)
+							results.append(torrent)
+					
+					else:
 						results.append(torrent)
-				
-				else:
-					results.append(torrent)
+			
+			except:
+				pass
+		
 		
 		return results
 	
