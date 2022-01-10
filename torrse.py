@@ -23,22 +23,23 @@ _hash2magnet = lambda x: f'magnet:?xt=urn:btih:{x}'
 _magnet2hash = lambda x: x.split('&')[0].split(':')[-1].lower()
 _itorrent2hash = lambda x: _reg_itorrent2hash.search(x).group(1).lower()
 _bt4g2hash = lambda x: _reg_bt4g2hash.search(x).group(1).lower()
+_hashlower = lambda x: x[0:20] + x[20:60].lower() + x[60:]
 
 
 def get_magnet(link):
 	matchmake = {
-		'1337xx.to': lambda x: magnet[0].get('href') if (magnet := _soup(_session.get(x).text).select('a[href^="magnet"]')) else None,
+		'1337xx.to': lambda x: _hashlower(magnet[0].get('href')) if (magnet := _soup(_session.get(x).text).select('a[href^="magnet"]')) else None,
 		'solidtorrents.net': lambda x: None,
-		'bt4g.org': lambda x: _hash2magnet(_bt4g2hash(x)),
-		'itorrents': lambda x: _hash2magnet(_itorrent2hash(x)),
+		'bt4g.org': lambda x: _hashlower(_hash2magnet(_bt4g2hash(x))),
+		'itorrents': lambda x: _hashlower(_hash2magnet(_itorrent2hash(x))),
 		'zooqle.com': lambda x: None,
 		'knaben.ru': lambda x: None,
 		'torrentdownload.info': lambda x: None,
 		'nyaa.si': lambda x: None,
 		'magnetdl': lambda x: None,
-		'uniondht.org': lambda x: magnet[0].get('href') if (magnet := _soup(_session.get(x).text).select('a[href^="magnet"]')) else None,
-		'torlock.com': lambda x: magnet[0].get('href') if (magnet := _soup(_session.get(x).text).select('a[href^="magnet"]')) else None,
-		'torrentdownloads.pro': lambda x: magnet[0].get('href') if (magnet := _soup(_session.get(x).text).select('a[href^="magnet"]')) else None,
+		'uniondht.org': lambda x: _hashlower(magnet[0].get('href')) if (magnet := _soup(_session.get(x).text).select('a[href^="magnet"]')) else None,
+		'torlock.com': lambda x: _hashlower(magnet[0].get('href')) if (magnet := _soup(_session.get(x).text).select('a[href^="magnet"]')) else None,
+		'torrentdownloads.pro': lambda x: _hashlower(magnet[0].get('href')) if (magnet := _soup(_session.get(x).text).select('a[href^="magnet"]')) else None,
 		'kickass.onl': lambda x: None
 	}
 	
@@ -1143,7 +1144,7 @@ class engine_torrentdownloads:
 			soup = _soup(resp.text)
 			
 			
-			torrentList = [_i for x in soup.select('a[href^="/torrent"]') if (_i := x.parent).name == 'div']
+			torrentList = [_i for x in soup.select('a[href^="/torrent"]') if (_i := x.parent).name == 'div'] if (last > 1) else [_i for x in soup.select('a[href^="/torrent"]') if (_i := x.parent).name == 'div'][1:]
 			
 			
 			
